@@ -18,7 +18,7 @@
   "devDependencies": {
     "alloyfinger": "^0.1.10",
     "autoprefixer": "^7.1.2",
-    "axios": "^0.16.2",
+    "axios": "^0.18.1",
     "babel-core": "^6.22.1",
     "babel-loader": "^7.1.1",
     "babel-plugin-transform-runtime": "^6.22.0",
