@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
+    <meta content="yes" name="apple-mobile-web-app-capable">
+    <meta content="black" name="apple-mobile-web-app-status-bar-style">
+    <meta content="telephone=no" name="format-detection">
+    <!--1 static下面的资源引入 要用相对路径 不能使用绝对路径 不然打包找不到路径-->
+    <!--2 打包修改 config下面的index目录 build assetsPublicPath: './' 保证打包后资源引入正确-->
+    <!--3 路径 换成hash路径 解决刷新找不到页面的问题-->
+    <!--4 大于10kb背景图修改 build/utils 找到options.extract 增加publicPath: '../../',-->
+    <!--5 js引入img require(xxxx)-->
+    <title>首页</title>
+    <script>
+        (function(win,doc){
+            function change(){
+                doc.documentElement.style.fontSize=doc.documentElement.clientWidth/750*100+'px';
+            }
+            change();
+            win.addEventListener('resize',change,false);
+        })(window,document);
+    </script>
+</head>
+<body>
+<div id="app"></div>
+
+</body>
+</html>
