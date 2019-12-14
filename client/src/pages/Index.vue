@@ -2,19 +2,16 @@
     <div ref="index">
 
         <!--首页轮播图-->
-        <div class="new_banner" style="margin-top:1.2rem;">
-
+        <div class="new_banner">
             <mt-swipe :auto="0">
                 <mt-swipe-item v-for="(item,index) in swiperList" :key="index">
-                    <img :src="item.picture.url" alt="">
+                    <img :src="item.href" alt="" style="max-width: 100%; width: 100%;">
                 </mt-swipe-item>
             </mt-swipe>
-
             <div class="city">
                 <span class="cityName" @click="nameSelectCity">{{cityName}}</span>
                 <span class="cityMap"></span>
             </div>
-
             <div class="search" id="homeSearch">
                 <input type="text" placeholder="搜索商品" v-model="searchKey">
                 <p class="searchBtn" @click="searchFn">
@@ -24,31 +21,10 @@
 
         </div>
 
-        <!--首页 3小块-->
-        <div class="homePic">
-            <!--v-if timeList有长度才渲染 避免 页面渲染完了 数据异步还没获取到的报错-->
-            <p class="p1" v-if="timeList.length">
-                <router-link :to="{path:'/homeTimeOver',query:{current_page:1}}">
-                    <img :title="timeList[0].title" :src="timeList[0].url" class="go1">
-                </router-link>
-            </p>
-            <p class="p2" v-if="timeList.length">
-                <router-link :to="{path:'/homePre',query:{current_page:1}}">
-                    <img :title="timeList[1].title" :src="timeList[1].url" class="go2">
-                </router-link>
-                <router-link :to="{path:'/homeDiscount',query:{current_page:1}}">
-                    <img :title="timeList[2].title" :src="timeList[2].url" class="go3">
-                </router-link>
-            </p>
-
-        </div>
-
-
         <!--首页导航-->
         <div class="indexNav">
             <ul>
                 <li v-for="(cad,index) in categoryList">
-                    <!--params传参 一定要在路由导航上加上name 不然不起作用 路由配置里面最好也写上name-->
                     <router-link :to="{path:'/allGoods',query:{category_id:cad.id,category_name:cad.name,pageIndex:1}}">
                         <img :src='cad.logo'>
                         <p>{{cad.name=='全部分类'?'所有':cad.name}}</p>
@@ -85,9 +61,8 @@
             </div>
         </div>
 
-
         <!--城市弹出层-->
-        <mt-popup v-model="popupVisible" style="background:none;">
+        <mt-popup :closeOnClickModal="false" v-model="popupVisible" style="background:none;">
             <div class="selectCity" id="selectCity" style="display:block;">
                 <p class="cityTitle">请选择您的商铺所在城市</p>
                 <ul class="homeCityList">
@@ -96,7 +71,6 @@
                         :area_name="item.name"
                         :class="{currentCityName:cityIndex===index}">
                         {{item.name}}
-
                     </li>
                 </ul>
                 <p class="querenCity" @click="sendCity">确定</p>
@@ -116,6 +90,7 @@
                 cityIndex: 0, //当前城市索引 标识颜色高亮的
                 swiperList:[], //banner图数据
                 cityName:'',//当前城市名字
+                cityId:'',
                 timeList:[],//限时区域
                 categoryList:[], //分类导航数据
                 //导航所有配置 模仿后台数据 进行拼接
@@ -128,55 +103,41 @@
                 searchKey:''
             }
         },
-        computed:{
-
-        },
         methods: {
+            // 获取城市列表
             getCity(){
-
-                this.$http.get(this.baseUrl + '/api/city/list').then((d) => {
+                this.$http.get('/api/city/list').then((d) => {
                     this.$indicator.close();
-
-                    this.cityList = d.data.data;
-
-                    this.cityName=window.localStorage.getItem('area_name');
-                    //初始化根据缓存的城市id请求首页数据
-                    this.swiperView(window.localStorage.getItem('area_id'));
-                    this.homePic(window.localStorage.getItem('area_id'));
-                    this.categoryListFn(window.localStorage.getItem('area_id'));
-                    this.goodsList(window.localStorage.getItem('area_id'));
-                    //this.searchCityList(window.localStorage.getItem('area_id'));
-                }).catch((e) => {
-
+                    this.cityList = d.data.cityList1;
                 })
             },
+            // 选择城市
             selectCity(index, id, name){
                 this.cityIndex = index;
-                window.localStorage.setItem('area_id', id);
                 window.localStorage.setItem('area_name', name);
+                window.localStorage.setItem('area_id', id);
             },
+            // 直接确定获取第一个城市
             sendCity(){
                 var area_name=window.localStorage.getItem('area_name');
-                var area_id = window.localStorage.getItem('area_id');
-                if (area_id) {
+                var area_id=window.localStorage.getItem('area_id');
+                if (area_name) {
+                    area_name = window.localStorage.getItem('area_name');
                     area_id = window.localStorage.getItem('area_id');
                 } else {
-                    area_id = this.cityList[0].id;
                     area_name = this.cityList[0].name;
-                    window.localStorage.setItem('area_id', area_id);
+                    area_id = this.cityList[0].id;
                     window.localStorage.setItem('area_name', area_name);
+                    window.localStorage.setItem('area_id', area_id);
                 }
                 this.popupVisible = false;
                 this.cityName=area_name;
                 //根据城市id请求首页数据
                 this.swiperView(area_id);
-                this.homePic(area_id);
-                this.categoryListFn(area_id);
-                this.goodsList(area_id);
-                //this.searchCityList(area_id);
-
+                //this.categoryListFn(area_name);
+                //this.goodsList(area_name);
             },
-            //点击城市名选择城市
+            //点击轮播图城市名选择城市
             nameSelectCity(){
                 this.popupVisible = true;//控制调用弹出层
                 //遍历城市比对 当前城市名字 一样的 根据城市索引 高亮着色
@@ -189,34 +150,23 @@
             },
             //图片数据
             swiperView(area_id){
-                this.$http.get(this.baseUrl + '/api/index/picture', {
+                this.$http.get('/api/city/picture', {
                     params: {
                         area_id: area_id
                     }
                 }).then((d) => {
+                    console.log(d.data.ret);
                     this.$indicator.close();
-                    this.swiperList = d.data.data.mall_flash;
+                    this.swiperList = d.data.ret
+                    console.log(this.swiperList);
                 }).catch((e) => {
                     this.$indicator.close();
                 })
             },
-            //home 限时 特惠 秒杀
-            homePic(area_id){
-                this.$http.get(this.baseUrl + '/api/index/picture', {
-                    params: {
-                        area_id: area_id
-                    }
-                }).then((d) => {
-                    this.$indicator.close();
-                    this.timeList = d.data.data.index_pic;
-                    console.log(this.timeList)
-                }).catch((e) => {
-                    this.$indicator.close();
-                })
-            },
+
             //导航分类数据
             categoryListFn(area_id){
-                this.$http.get(this.baseUrl + '/api/index/picture', {
+                this.$http.get('/api/city/picture', {
                     params: {
                         area_id: area_id
                     }
@@ -228,9 +178,10 @@
                     this.$indicator.close();
                 })
             },
+
             //首页商品列表数据
             goodsList(area_id){
-                this.$http.get(this.baseUrl + '/api/index/picture', {
+                this.$http.get('/api/city/picture', {
                     params: {
                         area_id: area_id
                     }
@@ -268,18 +219,7 @@
             }
         },
         mounted(){
-
-            //alert('从登录页跳转到首页到底弹不弹') //执行
-
-            //mounted刷新执行 每次跳转到本组件的时候会执行一次 跳转到本组件关联的公共组件不会执行他自己的mounted
             this.getCity();
-
-            if (!window.localStorage.getItem('area_id') && window.localStorage.getItem('area_id') != "undefined") {
-                this.popupVisible = true;
-            } else {
-                this.popupVisible = false;
-            }
-
             this.$store.dispatch('changeHideTop2');
             this.$store.dispatch('changeFooter2');
         }

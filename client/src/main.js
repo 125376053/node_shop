@@ -7,7 +7,6 @@ import "./assets/css/all.css"; //全局css
 require('./assets/js/jquery-1.11.0'); //全局引入jquery
 
 import axios from "axios";
-
 import Mint from 'mint-ui'; //mint ui 组件
 import 'mint-ui/lib/style.css'; // mint ui css
 Vue.use(Mint);
@@ -19,7 +18,7 @@ Vue.use(VueAwesomeSwiper)
 //vue-awesome-swiper插件的引入------------end
 
 Vue.prototype.$http=axios; //因为不是插件 这样写让后面使用
-Vue.prototype.baseUrl="http://admin.cpm66.com";
+Vue.prototype.baseUrl="http://127.0.0.1:3301";
 
 //处理全局过滤器
 import * as custom from './filter';
@@ -36,8 +35,8 @@ for(var x in custom){
 //全局指令
 import * as direct from './directive';
 Object.keys(direct).forEach(key => {
-    console.log(key)
-    console.log(direct[key])
+    //console.log(key)
+    //console.log(direct[key])
     Vue.directive(key,direct[key])
 });
 
@@ -51,6 +50,36 @@ Vue.prototype.busEvent=new Vue();
 //Aai
 import Api from "./api";
 Vue.prototype.api=Api;
+
+axios.interceptors.request.use(function(config) {
+    console.log('请求拦截');
+    if (localStorage.getItem("user")) {
+        config.headers['token'] = JSON.parse(localStorage.getItem("user")).token;
+    }
+    return config
+}, function(error) {
+    console.log('请求错误拦截');
+    return error
+});
+
+//返回状态判断(添加响应拦截器)
+axios.interceptors.response.use(res => {
+    console.log('响应拦截');
+    if(res.status==200){
+        // 响应成功
+        console.log(res);
+        if(res.data.code==400){
+            //router.push('/login')
+            console.log('登录失效')
+        }
+    }else{
+
+    }
+    return res;
+}, (error) => {
+    console.log('响应错误拦截');
+    return error;
+});
 
 
 var token=null;
@@ -67,10 +96,3 @@ var glob=new Vue({
     components: {App}
 });
 Vue.prototype.glob=glob;
-
-/*console.log(glob)
-console.log(glob.$root)
-console.log(glob.$parent)
-console.log(new Vue()==glob) //false  因为引用类型 内存地址不一样
-console.log(glob.$children)
-console.log([]==[])// false*/

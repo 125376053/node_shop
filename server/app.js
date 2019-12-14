@@ -4,13 +4,17 @@ var path = require('path')
 var bodyParse = require('body-parser')
 var jwt = require('jsonwebtoken');
 app.use(bodyParse())
+
 app.use(express.static(path.join(__dirname,'dist')));
+app.use(express.static(path.join(__dirname,'public')));
+
 app.get('/', function(req, res, next) {
     res.sendFile(path.resolve('./dist/index.html'))
 });
+
 app.use(function(req,res,next){
-    res.setHeader('Access-Control-Allow-Origin','*');
-    if(req.path =='/api/users/login'){
+    console.log(req.path);
+    if(req.path =='/api/city/list' || req.path =='/api/city/picture'){
         next()
         return
     }
@@ -33,6 +37,7 @@ app.use(function(req,res,next){
         });
     }
 })
+
 // 路由处理
 var indexRouter = require('./routes/index');
 app.use('/api/', indexRouter);

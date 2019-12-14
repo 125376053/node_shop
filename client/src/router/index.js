@@ -34,7 +34,7 @@ import resetPass from "../pages/resetPass.vue";
 Vue.use(Router)
 
 const router = new Router({
-    mode: 'history',//神奇的作用 可以把url中文字符自动编译 如果是hash模式 就显示乱码
+    //mode: 'history',//神奇的作用 可以把url中文字符自动编译 如果是hash模式 就显示乱码
     routes: [
         {
             path: '/',
